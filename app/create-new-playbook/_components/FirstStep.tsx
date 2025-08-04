@@ -2,16 +2,24 @@
 import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, X } from "lucide-react";
+import { useAnalyze } from "@/context/AnalyzeContext";
 
 function ChatBox() {
   const [goal, setGoal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { setUserRequest, setApiResult, setCurrentView } = useAnalyze();
+
+  const handleClear = () => {
+    setGoal("");
+  };
 
   const onSend = async () => {
     if (!goal.trim() || isLoading) return;
 
     setIsLoading(true);
+    setUserRequest(goal);
+    
     try {
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -25,6 +33,8 @@ function ChatBox() {
 
       if (response.ok) {
         const data = await response.json();
+        setApiResult(data);
+        setCurrentView('result');
         console.log("API Response:", data);
       } else {
         console.error("API Error:", response.status);
@@ -49,11 +59,22 @@ function ChatBox() {
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
           />
+          {goal && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="absolute right-16 bottom-4 cursor-pointer"
+              onClick={handleClear}
+              disabled={isLoading}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
           <Button
             size={isLoading ? "default" : "icon"}
             className="absolute right-4 bottom-4 cursor-pointer"
             onClick={() => onSend()}
-            disabled={isLoading}
+            disabled={isLoading || !goal.trim()}
           >
             {isLoading ? (
               <>

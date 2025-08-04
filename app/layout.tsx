@@ -4,6 +4,7 @@ import "./globals.css";
 import Provider from "./provider";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { AnalyzeProvider } from "@/context/AnalyzeContext";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -23,8 +24,12 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={outfit.className}>
-          <ConvexClientProvider>{children}</ConvexClientProvider>
+        <body className={outfit.className} suppressHydrationWarning={true}>
+          <ConvexClientProvider>
+            <AnalyzeProvider>
+              {children}
+            </AnalyzeProvider>
+          </ConvexClientProvider>
         </body>
       </html>
     </ClerkProvider>
