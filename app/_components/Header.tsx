@@ -25,7 +25,7 @@ function Header() {
     <div className="flex justify-between items-center py-4 px-8 bg-primary-foreground">
       <Link href="/">
         <div className="flex gap-2 items-center">
-          <Image src="/logo.svg" alt="Logo" width={30} height={30} />
+          <Image src="/logo.svg" alt="Logo" width={30} height={30} style={{ width: "auto", height: "auto" }} />
           <h2 className="font-bold text-2xl text-gradient">
             Playbook Generator
           </h2>
