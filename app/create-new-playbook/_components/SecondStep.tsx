@@ -99,6 +99,9 @@ function SecondStep() {
                           <h3 className="text-base font-semibold text-neutral-800 dark:text-neutral-200">
                             <span className="text-blue-600 dark:text-blue-400 mr-2">{index + 1}.</span>
                             {questionObj.question}
+                            {questionObj.mandatory && (
+                              <span className="text-red-500 ml-1">*</span>
+                            )}
                           </h3>
                           {questionObj.description && (
                             <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
@@ -123,6 +126,21 @@ function SecondStep() {
                   </div>
                 )}
               </div>
+              
+              {apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions) && (
+                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                  <Button 
+                    variant="default"
+                    className="w-full font-medium py-3"
+                    onClick={() => {
+                      console.log("Generating playbook with answers:", questionAnswers);
+                      // Handle playbook generation here
+                    }}
+                  >
+                    Generate Playbook
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
