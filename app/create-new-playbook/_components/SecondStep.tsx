@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lightbulb } from "lucide-react";
 import { useAnalyze } from "@/context/AnalyzeContext";
 
 function SecondStep() {
@@ -20,6 +20,14 @@ function SecondStep() {
     }));
   };
 
+  const handleGenerateDraftAnswer = (questionIndex: number, question: string) => {
+    console.log(`Generating draft answer for question ${questionIndex + 1}:`, question);
+    // TODO: Implement LLM API call to generate draft answer
+    // For now, just add placeholder text
+    const draftAnswer = `[AI-generated draft for: ${question}]`;
+    handleAnswerChange(questionIndex, draftAnswer);
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <div className="flex flex-col flex-1 px-4 py-8 min-h-0">
@@ -33,7 +41,7 @@ function SecondStep() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-3xl font-bold text-neutral-800 dark:text-neutral-200">
-            Let's refine your idea
+            Let's refine your idea{apiResult?.intent && ` - ${apiResult.intent}`}
           </h1>
         </div>
 
@@ -53,17 +61,9 @@ function SecondStep() {
 
             <div className="border rounded-2xl p-6 shadow-md">
               <h2 className="text-xl font-semibold mb-4 text-neutral-700 dark:text-neutral-300">
-                Analysis Details
+                Request Analysis
               </h2>
               <div className="space-y-4">
-                {apiResult?.intent && (
-                  <div>
-                    <h3 className="font-medium text-neutral-600 dark:text-neutral-400 mb-2">Intent</h3>
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                      <p className="text-neutral-800 dark:text-neutral-200">{apiResult.intent}</p>
-                    </div>
-                  </div>
-                )}
                 {apiResult?.type && (
                   <div>
                     <h3 className="font-medium text-neutral-600 dark:text-neutral-400 mb-2">Type</h3>
@@ -88,7 +88,7 @@ function SecondStep() {
           <div className="flex-1 flex flex-col min-h-0">
             <div className="border rounded-2xl p-6 shadow-md flex-1 flex flex-col min-h-0">
               <h2 className="text-xl font-semibold mb-4 text-neutral-700 dark:text-neutral-300 flex-shrink-0">
-                Clarification Questions
+                Your input helps create the perfect playbook
               </h2>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 flex-1 overflow-y-auto min-h-0">
                 {apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions) ? (
@@ -109,12 +109,23 @@ function SecondStep() {
                             </p>
                           )}
                         </div>
-                        <Textarea
-                          placeholder="Enter your answer here..."
-                          className="w-full min-h-32 text-sm border border-gray-300 dark:border-gray-600 rounded-md p-3 focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 resize-y"
-                          value={questionAnswers[index] || ""}
-                          onChange={(e) => handleAnswerChange(index, e.target.value)}
-                        />
+                        <div className="relative">
+                          <Textarea
+                            placeholder="Enter your answer here..."
+                            className="w-full min-h-32 text-sm border border-gray-300 dark:border-gray-600 rounded-md p-3 pr-12 focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 resize-y"
+                            value={questionAnswers[index] || ""}
+                            onChange={(e) => handleAnswerChange(index, e.target.value)}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            onClick={() => handleGenerateDraftAnswer(index, questionObj.question)}
+                            title="Generate draft answer with AI"
+                          >
+                            <Lightbulb className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
