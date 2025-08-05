@@ -88,7 +88,7 @@ function SecondStep() {
           <div className="flex-1 flex flex-col min-h-0">
             <div className="border rounded-2xl p-6 shadow-md flex-1 flex flex-col min-h-0">
               <h2 className="text-xl font-semibold mb-4 text-neutral-700 dark:text-neutral-300 flex-shrink-0">
-                Your input helps create the perfect playbook
+                Your inputs will help us to create the perfect playbook
               </h2>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 flex-1 overflow-y-auto min-h-0">
                 {apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions) ? (
@@ -109,17 +109,17 @@ function SecondStep() {
                             </p>
                           )}
                         </div>
-                        <div className="relative">
+                        <div className="border rounded-2xl p-4 shadow-md relative">
                           <Textarea
                             placeholder="Enter your answer here..."
-                            className="w-full min-h-32 text-sm border border-gray-300 dark:border-gray-600 rounded-md p-3 pr-12 focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 resize-y"
+                            className="w-full min-h-32 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-y"
                             value={questionAnswers[index] || ""}
                             onChange={(e) => handleAnswerChange(index, e.target.value)}
                           />
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="absolute top-2 right-2 h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            className="absolute top-4 right-4 h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                             onClick={() => handleGenerateDraftAnswer(index, questionObj.question)}
                             title="Generate draft answer with AI"
                           >
