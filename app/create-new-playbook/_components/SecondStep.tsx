@@ -2,12 +2,15 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Lightbulb } from "lucide-react";
+import { ArrowLeft, Lightbulb, X, Loader2 } from "lucide-react";
 import { useAnalyze } from "@/context/AnalyzeContext";
 
 function SecondStep() {
   const { userRequest, apiResult, setCurrentView } = useAnalyze();
   const [questionAnswers, setQuestionAnswers] = useState<Record<number, string>>({});
+  const [skippedQuestions, setSkippedQuestions] = useState<Record<number, boolean>>({});
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [loadingAnswers, setLoadingAnswers] = useState<Record<number, boolean>>({});
 
   const handleBack = () => {
     setCurrentView('input');
@@ -20,12 +23,77 @@ function SecondStep() {
     }));
   };
 
-  const handleGenerateDraftAnswer = (questionIndex: number, question: string) => {
-    console.log(`Generating draft answer for question ${questionIndex + 1}:`, question);
-    // TODO: Implement LLM API call to generate draft answer
-    // For now, just add placeholder text
-    const draftAnswer = `[AI-generated draft for: ${question}]`;
-    handleAnswerChange(questionIndex, draftAnswer);
+  const handleGenerateDraftAnswer = async (questionIndex: number, question: string) => {
+    setLoadingAnswers(prev => ({ ...prev, [questionIndex]: true }));
+    
+    try {
+      const response = await fetch("/api/generate-answer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userRequest,
+          intent: apiResult?.intent,
+          type: apiResult?.type,
+          context: apiResult?.context,
+          question,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        handleAnswerChange(questionIndex, data.draftAnswer);
+      } else {
+        console.error("API Error:", response.status);
+        handleAnswerChange(questionIndex, "Error generating answer. Please try again.");
+      }
+    } catch (error) {
+      console.error("Network Error:", error);
+      handleAnswerChange(questionIndex, "Error generating answer. Please try again.");
+    } finally {
+      setLoadingAnswers(prev => ({ ...prev, [questionIndex]: false }));
+    }
+  };
+
+  const handleClearAnswer = (questionIndex: number) => {
+    handleAnswerChange(questionIndex, "");
+  };
+
+  const handleToggleSkip = (questionIndex: number) => {
+    setSkippedQuestions(prev => ({
+      ...prev,
+      [questionIndex]: !prev[questionIndex]
+    }));
+    // Clear answer when skipping
+    if (!skippedQuestions[questionIndex]) {
+      handleAnswerChange(questionIndex, "");
+    }
+  };
+
+  const handleGeneratePlaybook = () => {
+    const questions = apiResult?.questions?.questions || [];
+    const unansweredQuestions: number[] = [];
+    
+    questions.forEach((_: any, index: number) => {
+      const isSkipped = skippedQuestions[index];
+      const hasAnswer = questionAnswers[index]?.trim();
+      
+      if (!isSkipped && !hasAnswer) {
+        unansweredQuestions.push(index + 1);
+      }
+    });
+
+    if (unansweredQuestions.length > 0) {
+      setErrorMessage(`Please answer or skip the following questions before generating the playbook: ${unansweredQuestions.join(', ')}`);
+      return;
+    }
+
+    // Clear any previous error message
+    setErrorMessage("");
+    console.log("Generating playbook with answers:", questionAnswers);
+    console.log("Skipped questions:", skippedQuestions);
+    // Handle playbook generation here
   };
 
   return (
@@ -90,7 +158,7 @@ function SecondStep() {
               <h2 className="text-xl font-semibold mb-4 text-neutral-700 dark:text-neutral-300 flex-shrink-0">
                 Your inputs will help us to create the perfect playbook
               </h2>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 flex-1 overflow-y-auto min-h-0">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 flex-1 overflow-y-auto min-h-0 mb-4">
                 {apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions) ? (
                   <div className="space-y-6">
                     {apiResult.questions.questions.map((questionObj: any, index: number) => (
@@ -109,22 +177,48 @@ function SecondStep() {
                             </p>
                           )}
                         </div>
-                        <div className="border rounded-2xl p-4 shadow-md relative">
+                        <div className={`border rounded-2xl p-4 shadow-md w-full relative ${skippedQuestions[index] ? 'bg-gray-100 dark:bg-gray-800' : ''}`}>
+                          {(!questionAnswers[index]?.trim() || skippedQuestions[index]) && (
+                            <Button
+                              variant={skippedQuestions[index] ? "default" : "outline"}
+                              size="sm"
+                              className={`absolute left-4 bottom-4 cursor-pointer text-xs z-10 ${skippedQuestions[index] ? 'opacity-100' : ''}`}
+                              onClick={() => handleToggleSkip(index)}
+                            >
+                              {skippedQuestions[index] ? "Unskip" : "Skip"}
+                            </Button>
+                          )}
                           <Textarea
                             placeholder="Enter your answer here..."
-                            className="w-full min-h-32 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-y"
+                            className={`w-full min-h-32 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none pb-14 pr-20 ${skippedQuestions[index] ? 'opacity-50' : ''}`}
                             value={questionAnswers[index] || ""}
                             onChange={(e) => handleAnswerChange(index, e.target.value)}
+                            disabled={skippedQuestions[index]}
                           />
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-4 right-4 h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                            onClick={() => handleGenerateDraftAnswer(index, questionObj.question)}
-                            title="Generate draft answer with AI"
-                          >
-                            <Lightbulb className="h-4 w-4" />
-                          </Button>
+                          {questionAnswers[index] && !skippedQuestions[index] && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="absolute right-16 bottom-4 cursor-pointer"
+                              onClick={() => handleClearAnswer(index)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {!skippedQuestions[index] && (
+                            <button
+                              className="absolute right-4 bottom-4 cursor-pointer p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              onClick={() => handleGenerateDraftAnswer(index, questionObj.question)}
+                              title={loadingAnswers[index] ? "Generating answer..." : "Let AI generate a draft answer"}
+                              disabled={loadingAnswers[index]}
+                            >
+                              {loadingAnswers[index] ? (
+                                <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                              ) : (
+                                <Lightbulb className="w-4 h-4 text-gray-500 hover:text-blue-600" />
+                              )}
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -139,14 +233,18 @@ function SecondStep() {
               </div>
               
               {apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions) && (
-                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                  {errorMessage && (
+                    <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <p className="text-sm text-red-700 dark:text-red-300">
+                        {errorMessage}
+                      </p>
+                    </div>
+                  )}
                   <Button 
                     variant="default"
                     className="w-full font-medium py-3"
-                    onClick={() => {
-                      console.log("Generating playbook with answers:", questionAnswers);
-                      // Handle playbook generation here
-                    }}
+                    onClick={handleGeneratePlaybook}
                   >
                     Generate Playbook
                   </Button>

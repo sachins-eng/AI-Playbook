@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SignInButton, UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
+import { useAnalyze } from "@/context/AnalyzeContext";
 
 const menuOptionsBeforeLogin = [
   { name: "Home", href: "/" },
@@ -20,6 +21,7 @@ const menuOptionsAfterLogin = [
 
 function Header() {
   const { user, isLoaded } = useUser();
+  const { clearData } = useAnalyze();
 
   return (
     <div className="flex justify-between items-center py-4 px-8 bg-primary-foreground">
@@ -56,7 +58,7 @@ function Header() {
         </SignInButton>
       ) : (
         <div className="flex items-center gap-4">
-          <Link href="/create-new-playbook">
+          <Link href="/create-new-playbook" onClick={clearData}>
             <button className="bg-primary text-white rounded-md px-4 py-2 font-bold transition-all duration-300 hover:scale-105">
               New Playbook
             </button>

@@ -8,7 +8,14 @@ import { useAnalyze } from "@/context/AnalyzeContext";
 function ChatBox() {
   const [goal, setGoal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { setUserRequest, setApiResult, setCurrentView } = useAnalyze();
+  const { userRequest, setUserRequest, setApiResult, setCurrentView } = useAnalyze();
+
+  // Pre-populate with existing request when component mounts
+  React.useEffect(() => {
+    if (userRequest && !goal) {
+      setGoal(userRequest);
+    }
+  }, [userRequest, goal]);
 
   const handleClear = () => {
     setGoal("");
@@ -50,7 +57,7 @@ function ChatBox() {
     <div className="flex h-screen w-full">
       <div className="flex flex-col flex-1 items-center justify-center px-4">
         <div className="mb-6 text-center text-3xl text-neutral-800 dark:text-neutral-200">
-          Let's build something awesome
+          {userRequest ? "Refine your request" : "Let's build something awesome!"}
         </div>
         <div className="border rounded-2xl p-4 shadow-md w-full max-w-4xl relative">
           <Textarea
