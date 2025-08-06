@@ -2,15 +2,18 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Lightbulb, X, Loader2 } from "lucide-react";
+import { ArrowLeft, Lightbulb, X, Loader2, Edit, Send } from "lucide-react";
 import { useAnalyze } from "@/context/AnalyzeContext";
 
 function SecondStep() {
-  const { userRequest, apiResult, setCurrentView } = useAnalyze();
+  const { userRequest, apiResult, setCurrentView, setUserRequest, setApiResult } = useAnalyze();
   const [questionAnswers, setQuestionAnswers] = useState<Record<number, string>>({});
   const [skippedQuestions, setSkippedQuestions] = useState<Record<number, boolean>>({});
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loadingAnswers, setLoadingAnswers] = useState<Record<number, boolean>>({});
+  const [isEditingRequest, setIsEditingRequest] = useState(false);
+  const [editedRequest, setEditedRequest] = useState("");
+  const [isLoadingRequest, setIsLoadingRequest] = useState(false);
 
   const handleBack = () => {
     setCurrentView('input');
@@ -96,6 +99,53 @@ function SecondStep() {
     // Handle playbook generation here
   };
 
+  const handleEditRequest = () => {
+    setIsEditingRequest(true);
+    setEditedRequest(userRequest);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingRequest(false);
+    setEditedRequest("");
+  };
+
+  const isAnyAIGenerating = Object.values(loadingAnswers).some(loading => loading);
+
+  const handleSaveRequest = async () => {
+    if (!editedRequest.trim() || isLoadingRequest) return;
+
+    setIsLoadingRequest(true);
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          request: editedRequest.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserRequest(editedRequest.trim());
+        setApiResult(data);
+        setIsEditingRequest(false);
+        setEditedRequest("");
+        // Clear existing answers since we have new questions
+        setQuestionAnswers({});
+        setSkippedQuestions({});
+        setErrorMessage("");
+      } else {
+        console.error("API Error:", response.status);
+      }
+    } catch (error) {
+      console.error("Network Error:", error);
+    } finally {
+      setIsLoadingRequest(false);
+    }
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <div className="flex flex-col flex-1 px-4 py-8 min-h-0">
@@ -120,11 +170,59 @@ function SecondStep() {
               <h2 className="text-xl font-semibold mb-4 text-neutral-700 dark:text-neutral-300">
                 Your Request
               </h2>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                <p className="text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap">
-                  {userRequest}
-                </p>
-              </div>
+              {isEditingRequest ? (
+                <div className="border rounded-2xl p-4 shadow-md w-full relative">
+                  <Textarea
+                    placeholder="What do you want to create?"
+                    className="w-full min-h-32 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none pb-14 pr-20"
+                    value={editedRequest}
+                    onChange={(e) => setEditedRequest(e.target.value)}
+                    disabled={isLoadingRequest}
+                  />
+                  {editedRequest && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="absolute right-16 bottom-4 cursor-pointer"
+                      onClick={handleCancelEdit}
+                      disabled={isLoadingRequest}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <Button
+                    size={isLoadingRequest ? "default" : "icon"}
+                    className="absolute right-4 bottom-4 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={handleSaveRequest}
+                    disabled={isLoadingRequest || !editedRequest.trim()}
+                  >
+                    {isLoadingRequest ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analyzing
+                      </>
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <div className="border rounded-2xl p-4 shadow-md w-full relative">
+                  <div className="w-full min-h-32 text-base bg-transparent pb-14 pr-20">
+                    <p className="text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap">
+                      {userRequest}
+                    </p>
+                  </div>
+                  <button
+                    className="absolute right-4 bottom-4 cursor-pointer p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleEditRequest}
+                    title="Edit your request"
+                    disabled={isAnyAIGenerating}
+                  >
+                    <Edit className="w-4 h-4 text-gray-500 hover:text-blue-600" />
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="border rounded-2xl p-6 shadow-md">
@@ -184,6 +282,7 @@ function SecondStep() {
                               size="sm"
                               className={`absolute left-4 bottom-4 cursor-pointer text-xs z-10 ${skippedQuestions[index] ? 'opacity-100' : ''}`}
                               onClick={() => handleToggleSkip(index)}
+                              disabled={isLoadingRequest || loadingAnswers[index]}
                             >
                               {skippedQuestions[index] ? "Unskip" : "Skip"}
                             </Button>
@@ -193,7 +292,7 @@ function SecondStep() {
                             className={`w-full min-h-32 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none pb-14 pr-20 ${skippedQuestions[index] ? 'opacity-50' : ''}`}
                             value={questionAnswers[index] || ""}
                             onChange={(e) => handleAnswerChange(index, e.target.value)}
-                            disabled={skippedQuestions[index]}
+                            disabled={skippedQuestions[index] || isLoadingRequest}
                           />
                           {questionAnswers[index] && !skippedQuestions[index] && (
                             <Button
@@ -201,6 +300,7 @@ function SecondStep() {
                               variant="ghost"
                               className="absolute right-16 bottom-4 cursor-pointer"
                               onClick={() => handleClearAnswer(index)}
+                              disabled={isLoadingRequest}
                             >
                               <X className="w-4 h-4" />
                             </Button>
@@ -210,7 +310,7 @@ function SecondStep() {
                               className="absolute right-4 bottom-4 cursor-pointer p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                               onClick={() => handleGenerateDraftAnswer(index, questionObj.question)}
                               title={loadingAnswers[index] ? "Generating answer..." : "Let AI generate a draft answer"}
-                              disabled={loadingAnswers[index]}
+                              disabled={loadingAnswers[index] || isLoadingRequest}
                             >
                               {loadingAnswers[index] ? (
                                 <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
@@ -245,6 +345,7 @@ function SecondStep() {
                     variant="default"
                     className="w-full font-medium py-3"
                     onClick={handleGeneratePlaybook}
+                    disabled={isLoadingRequest}
                   >
                     Generate Playbook
                   </Button>
