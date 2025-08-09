@@ -16,7 +16,7 @@ const menuOptionsAfterLogin = [
   { name: "Dashboard", href: "/dashboard" },
   { name: "My Playbooks", href: "/playbooks" },
   { name: "My Initiatives", href: "/initiatives" },
-  { name: "Playbook Library", href: "/library" },
+  { name: "Public Library", href: "/library" },
 ];
 
 function Header() {
@@ -27,9 +27,9 @@ function Header() {
     <div className="flex justify-between items-center py-4 px-8 bg-primary-foreground">
       <Link href="/">
         <div className="flex gap-2 items-center">
-          <Image src="/logo.svg" alt="Logo" width={30} height={30} style={{ width: "auto", height: "auto" }} />
+          <Image src="/12.svg" alt="Logo" width={30} height={30} style={{ width: "60px", height: "60px" }} />
           <h2 className="font-bold text-2xl text-gradient">
-            Playbook Generator
+            Makebooks
           </h2>
         </div>
       </Link>

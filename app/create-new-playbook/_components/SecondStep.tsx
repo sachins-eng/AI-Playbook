@@ -2,11 +2,13 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Lightbulb, X, Loader2, Edit, Send } from "lucide-react";
+import { ArrowLeft, Lightbulb, X, Loader2, PenTool, Send } from "lucide-react";
 import { useAnalyze } from "@/context/AnalyzeContext";
+import { useRouter } from "next/navigation";
 
 function SecondStep() {
-  const { userRequest, apiResult, setCurrentView, setUserRequest, setApiResult } = useAnalyze();
+  const { userRequest, apiResult, setCurrentView, setUserRequest, setApiResult, setPlaybookData } = useAnalyze();
+  const router = useRouter();
   const [questionAnswers, setQuestionAnswers] = useState<Record<number, string>>({});
   const [skippedQuestions, setSkippedQuestions] = useState<Record<number, boolean>>({});
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -14,6 +16,7 @@ function SecondStep() {
   const [isEditingRequest, setIsEditingRequest] = useState(false);
   const [editedRequest, setEditedRequest] = useState("");
   const [isLoadingRequest, setIsLoadingRequest] = useState(false);
+  const [isGeneratingPlaybook, setIsGeneratingPlaybook] = useState(false);
 
   const handleBack = () => {
     setCurrentView('input');
@@ -30,6 +33,7 @@ function SecondStep() {
     setLoadingAnswers(prev => ({ ...prev, [questionIndex]: true }));
     
     try {
+      const questionObj = apiResult?.questions?.questions[questionIndex];
       const response = await fetch("/api/generate-answer", {
         method: "POST",
         headers: {
@@ -41,6 +45,7 @@ function SecondStep() {
           type: apiResult?.type,
           context: apiResult?.context,
           question,
+          placeholder: questionObj?.placeholder,
         }),
       });
 
@@ -74,6 +79,71 @@ function SecondStep() {
     }
   };
 
+  const handlePlaybookAPI = async (payload: { intent: string; context: string; type: string }) => {
+    try {
+      const response = await fetch("/api/playbook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Playbook API Response:", data);
+        // Store playbook data in context and navigate to playbook details page
+        setPlaybookData(data);
+        router.push('/playbook-details');
+      } else {
+        console.error("Playbook API Error:", response.status);
+        setErrorMessage("Failed to generate playbook. Please try again.");
+      }
+    } catch (error) {
+      console.error("Playbook API Network Error:", error);
+      setErrorMessage("Failed to generate playbook. Please try again.");
+    }
+  };
+
+  const handleContextAPI = async (payload: any) => {
+    setIsGeneratingPlaybook(true);
+    try {
+      const response = await fetch("/api/context", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Context API Response:", data);
+        // Update apiResult context with the response
+        const updatedContext = data.updated_context || data.context || data;
+        setApiResult((prev: any) => ({
+          ...prev,
+          context: updatedContext
+        }));
+        
+        // Call playbook API after context is updated
+        await handlePlaybookAPI({
+          intent: payload.intent,
+          context: updatedContext,
+          type: payload.type
+        });
+      } else {
+        console.error("Context API Error:", response.status);
+        setErrorMessage("Failed to generate playbook. Please try again.");
+      }
+    } catch (error) {
+      console.error("Context API Network Error:", error);
+      setErrorMessage("Failed to generate playbook. Please try again.");
+    } finally {
+      setIsGeneratingPlaybook(false);
+    }
+  };
+
   const handleGeneratePlaybook = () => {
     const questions = apiResult?.questions?.questions || [];
     const unansweredQuestions: number[] = [];
@@ -94,9 +164,38 @@ function SecondStep() {
 
     // Clear any previous error message
     setErrorMessage("");
-    console.log("Generating playbook with answers:", questionAnswers);
-    console.log("Skipped questions:", skippedQuestions);
-    // Handle playbook generation here
+    
+    // Consolidate all answered questions into an object array
+    const consolidatedQA = questions
+      .map((questionObj: any, index: number) => {
+        const isSkipped = skippedQuestions[index];
+        const answer = questionAnswers[index]?.trim();
+        
+        if (!isSkipped && answer) {
+          return {
+            question: questionObj.question,
+            description: questionObj.description,
+            answer: answer
+          };
+        }
+        return null;
+      })
+      .filter((qa: any) => qa !== null);
+    
+    console.log("Consolidated Questions and Answers:", consolidatedQA);
+    
+    // Prepare payload for context API
+    const payload = {
+      intent: apiResult.intent,
+      type: apiResult.type,
+      context: apiResult.context,
+      responses: consolidatedQA
+    };
+    
+    // Call context API route
+    handleContextAPI(payload);
+
+
   };
 
   const handleEditRequest = () => {
@@ -155,6 +254,7 @@ function SecondStep() {
             size="icon"
             onClick={handleBack}
             className="mr-4"
+            disabled={isGeneratingPlaybook}
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
@@ -177,7 +277,7 @@ function SecondStep() {
                     className="w-full min-h-32 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none pb-14 pr-20"
                     value={editedRequest}
                     onChange={(e) => setEditedRequest(e.target.value)}
-                    disabled={isLoadingRequest}
+                    disabled={isLoadingRequest || isGeneratingPlaybook}
                   />
                   {editedRequest && (
                     <Button
@@ -185,7 +285,7 @@ function SecondStep() {
                       variant="ghost"
                       className="absolute right-16 bottom-4 cursor-pointer"
                       onClick={handleCancelEdit}
-                      disabled={isLoadingRequest}
+                      disabled={isLoadingRequest || isGeneratingPlaybook}
                     >
                       <X className="w-4 h-4" />
                     </Button>
@@ -194,7 +294,7 @@ function SecondStep() {
                     size={isLoadingRequest ? "default" : "icon"}
                     className="absolute right-4 bottom-4 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={handleSaveRequest}
-                    disabled={isLoadingRequest || !editedRequest.trim()}
+                    disabled={isLoadingRequest || isGeneratingPlaybook || !editedRequest.trim()}
                   >
                     {isLoadingRequest ? (
                       <>
@@ -217,9 +317,9 @@ function SecondStep() {
                     className="absolute right-4 bottom-4 cursor-pointer p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleEditRequest}
                     title="Edit your request"
-                    disabled={isAnyAIGenerating}
+                    disabled={isAnyAIGenerating || isGeneratingPlaybook}
                   >
-                    <Edit className="w-4 h-4 text-gray-500 hover:text-blue-600" />
+                    <PenTool className="w-4 h-4 text-gray-500 hover:text-primary" />
                   </button>
                 </div>
               )}
@@ -282,17 +382,17 @@ function SecondStep() {
                               size="sm"
                               className={`absolute left-4 bottom-4 cursor-pointer text-xs z-10 ${skippedQuestions[index] ? 'opacity-100' : ''}`}
                               onClick={() => handleToggleSkip(index)}
-                              disabled={isLoadingRequest || loadingAnswers[index]}
+                              disabled={isLoadingRequest || loadingAnswers[index] || isGeneratingPlaybook}
                             >
                               {skippedQuestions[index] ? "Unskip" : "Skip"}
                             </Button>
                           )}
                           <Textarea
-                            placeholder="Enter your answer here..."
+                            placeholder={questionObj.placeholder || "Enter your answer here..."}
                             className={`w-full min-h-32 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none pb-14 pr-20 ${skippedQuestions[index] ? 'opacity-50' : ''}`}
                             value={questionAnswers[index] || ""}
                             onChange={(e) => handleAnswerChange(index, e.target.value)}
-                            disabled={skippedQuestions[index] || isLoadingRequest}
+                            disabled={skippedQuestions[index] || isLoadingRequest || isGeneratingPlaybook}
                           />
                           {questionAnswers[index] && !skippedQuestions[index] && (
                             <Button
@@ -300,7 +400,7 @@ function SecondStep() {
                               variant="ghost"
                               className="absolute right-16 bottom-4 cursor-pointer"
                               onClick={() => handleClearAnswer(index)}
-                              disabled={isLoadingRequest}
+                              disabled={isLoadingRequest || isGeneratingPlaybook}
                             >
                               <X className="w-4 h-4" />
                             </Button>
@@ -310,12 +410,12 @@ function SecondStep() {
                               className="absolute right-4 bottom-4 cursor-pointer p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                               onClick={() => handleGenerateDraftAnswer(index, questionObj.question)}
                               title={loadingAnswers[index] ? "Generating answer..." : "Let AI generate a draft answer"}
-                              disabled={loadingAnswers[index] || isLoadingRequest}
+                              disabled={loadingAnswers[index] || isLoadingRequest || isGeneratingPlaybook}
                             >
                               {loadingAnswers[index] ? (
                                 <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
                               ) : (
-                                <Lightbulb className="w-4 h-4 text-gray-500 hover:text-blue-600" />
+                                <Lightbulb className="w-4 h-4 text-gray-500 hover:text-primary" />
                               )}
                             </button>
                           )}
@@ -343,11 +443,18 @@ function SecondStep() {
                   )}
                   <Button 
                     variant="default"
-                    className="w-full font-medium py-3"
+                    className="w-full font-medium py-3 cursor-pointer"
                     onClick={handleGeneratePlaybook}
-                    disabled={isLoadingRequest}
+                    disabled={isLoadingRequest || isGeneratingPlaybook}
                   >
-                    Generate Playbook
+                    {isGeneratingPlaybook ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating Playbook...
+                      </>
+                    ) : (
+                      "Generate Playbook"
+                    )}
                   </Button>
                 </div>
               )}

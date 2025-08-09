@@ -62,7 +62,7 @@ function ChatBox() {
         <div className="border rounded-2xl p-4 shadow-md w-full max-w-4xl relative">
           <Textarea
             placeholder="What do you want to create?"
-            className="w-full h-48 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none"
+            className="w-full h-48 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none pb-14"
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
           />

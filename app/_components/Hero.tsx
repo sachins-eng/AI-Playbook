@@ -40,7 +40,7 @@ function Hero() {
       {/* content */}
       <div className="flex flex-col items-center justify-center space-y-6 text-center">
         <h1 className="text-xl md:text-5xl font-bold">
-          Create a Playbook for your team{" "}
+          Create a Playbook for anything{" "}
            <AuroraText>in minutes</AuroraText>
         </h1>
         <p className="text-xl">

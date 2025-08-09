@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { userRequest, intent, type, context, question } = await request.json();
+    const { userRequest, intent, type, context, question, placeholder } = await request.json();
 
     if (!userRequest || !question) {
       return NextResponse.json(
@@ -11,13 +11,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Replace with actual AI service (OpenAI, Anthropic, etc.)
-    // For now, create a mock response that includes all context
-    const contextInfo = context ? ` within the context of "${context}"` : "";
-    const draftAnswer = `Based on your request: "${userRequest}" (${intent} - ${type})${contextInfo}, here's a suggested answer for "${question}": This is a sample AI-generated response that would be tailored to your specific question and context.`;
+    // Call the external API at localhost:8000
+    const response = await fetch("http://localhost:8000/answer/draft", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_request: userRequest,
+        intent: intent || "",
+        context: context || "",
+        question: question,
+        placeholder: placeholder || "",
+      }),
+    });
 
+    if (!response.ok) {
+      console.error("External API Error:", response.status);
+      return NextResponse.json(
+        { error: "External API error" },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    
     return NextResponse.json({
-      draftAnswer,
+      draftAnswer: data.answer,
       success: true
     });
   } catch (error) {
