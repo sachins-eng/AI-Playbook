@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Lightbulb, X, Loader2, PenTool, Send } from "lucide-react";
+import { ArrowLeft, Sparkles, X, Loader2, PenTool, Send } from "lucide-react";
 import { useAnalyze } from "@/context/AnalyzeContext";
 import { useRouter } from "next/navigation";
 
@@ -265,7 +265,7 @@ function SecondStep() {
 
         <div className="flex flex-1 gap-6 mx-auto w-full min-h-0">
           {/* First Section - User Request and API Details */}
-          <div className="flex-1 flex flex-col gap-4 min-h-0">
+          <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto">
             <div className="border rounded-2xl p-6 shadow-md">
               <h2 className="text-xl font-semibold mb-4 text-neutral-700 dark:text-neutral-300">
                 Your Request
@@ -398,7 +398,7 @@ function SecondStep() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="absolute right-16 bottom-4 cursor-pointer"
+                              className="absolute right-12 bottom-4 cursor-pointer"
                               onClick={() => handleClearAnswer(index)}
                               disabled={isLoadingRequest || isGeneratingPlaybook}
                             >
@@ -406,8 +406,10 @@ function SecondStep() {
                             </Button>
                           )}
                           {!skippedQuestions[index] && (
-                            <button
-                              className="absolute right-4 bottom-4 cursor-pointer p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="absolute right-4 bottom-4 cursor-pointer"
                               onClick={() => handleGenerateDraftAnswer(index, questionObj.question)}
                               title={loadingAnswers[index] ? "Generating answer..." : "Let AI generate a draft answer"}
                               disabled={loadingAnswers[index] || isLoadingRequest || isGeneratingPlaybook}
@@ -415,9 +417,9 @@ function SecondStep() {
                               {loadingAnswers[index] ? (
                                 <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
                               ) : (
-                                <Lightbulb className="w-4 h-4 text-gray-500 hover:text-primary" />
+                                <Sparkles className="w-4 h-4 text-gray-500 hover:text-primary" />
                               )}
-                            </button>
+                            </Button>
                           )}
                         </div>
                       </div>
