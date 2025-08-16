@@ -18,6 +18,13 @@ function ChatBox() {
     }
   }, [userRequest, goal]);
 
+  // Clear local goal state when userRequest is cleared from store
+  React.useEffect(() => {
+    if (!userRequest && goal) {
+      setGoal("");
+    }
+  }, [userRequest]);
+
   const handleClear = () => {
     setGoal("");
     setUserRequest(""); // Clear the context as well
@@ -85,6 +92,7 @@ function ChatBox() {
         </div>
         <div className="border rounded-2xl p-4 shadow-md w-full max-w-4xl flex flex-col">
           <Textarea
+            id="goal"
             placeholder="What do you want to create?"
             className="w-full h-48 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none"
             value={goal}
