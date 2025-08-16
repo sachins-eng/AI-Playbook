@@ -24,7 +24,7 @@ function Header() {
   const { clearData } = useAnalyze();
 
   return (
-    <div className="flex justify-between items-center py-4 px-8 bg-primary-foreground">
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center py-4 px-8 bg-primary-foreground">
       <Link href="/">
         <div className="flex gap-2 items-center">
           <Image src="/12.svg" alt="Logo" width={30} height={30} style={{ width: "60px", height: "60px" }} />

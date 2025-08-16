@@ -88,7 +88,7 @@ function Hero() {
             className="block dark:hidden"
             animationStyle="from-center"
             videoSrc="https://www.youtube.com/embed/TsIN9h07lq0"
-            thumbnailSrc="/hero-image.png"
+            thumbnailSrc="/bg-makebooks.png"
             thumbnailAlt="Dummy Video Thumbnail"
           />
         </div>

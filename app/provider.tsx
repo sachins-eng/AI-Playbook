@@ -39,7 +39,9 @@ function Provider({
     <div>
       <UserDetailContext.Provider value={{userDetails}}>
         <Header />
-        {children}
+        <div className="pt-24">
+          {children}
+        </div>
       </UserDetailContext.Provider>
     </div>
   );
