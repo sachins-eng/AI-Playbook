@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Sparkles, X, Loader2, PenTool, Send } from "lucide-react";
+import { ArrowLeft, Sparkles, X, Loader2, PenTool, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { useAnalyze } from "@/context/AnalyzeContext";
 import { useRouter } from "next/navigation";
 
@@ -17,6 +17,7 @@ function SecondStep() {
   const [editedRequest, setEditedRequest] = useState("");
   const [isLoadingRequest, setIsLoadingRequest] = useState(false);
   const [isGeneratingPlaybook, setIsGeneratingPlaybook] = useState(false);
+  const [isRequestExpanded, setIsRequestExpanded] = useState(true);
 
   const handleBack = () => {
     setCurrentView('input');
@@ -92,6 +93,7 @@ function SecondStep() {
       if (response.ok) {
         const data = await response.json();
         console.log("Playbook API Response:", data);
+        data.type = payload.type;
         // Store playbook data in context and navigate to playbook details page
         setPlaybookData(data);
         router.push('/playbook-details');
@@ -266,61 +268,76 @@ function SecondStep() {
         <div className="flex flex-1 gap-6 mx-auto w-full min-h-0">
           {/* First Section - User Request and API Details */}
           <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto">
-            <div className="border rounded-2xl p-6 shadow-md">
-              <h2 className="text-xl font-semibold mb-4 text-neutral-700 dark:text-neutral-300">
-                Your Request
-              </h2>
-              {isEditingRequest ? (
-                <div className="border rounded-2xl p-4 shadow-md w-full relative">
-                  <Textarea
-                    placeholder="What do you want to create?"
-                    className="w-full min-h-32 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none pb-14 pr-20"
-                    value={editedRequest}
-                    onChange={(e) => setEditedRequest(e.target.value)}
-                    disabled={isLoadingRequest || isGeneratingPlaybook}
-                  />
-                  {editedRequest && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="absolute right-16 bottom-4 cursor-pointer"
-                      onClick={handleCancelEdit}
-                      disabled={isLoadingRequest || isGeneratingPlaybook}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+            <div className="border rounded-2xl shadow-md">
+              <button
+                className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors rounded-t-2xl"
+                onClick={() => setIsRequestExpanded(!isRequestExpanded)}
+              >
+                <h2 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">
+                  Your Request
+                </h2>
+                {isRequestExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-neutral-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-neutral-500" />
+                )}
+              </button>
+              
+              {isRequestExpanded && (
+                <div className="px-6 pb-6">
+                  {isEditingRequest ? (
+                    <div className="border rounded-2xl p-4 shadow-md w-full relative">
+                      <Textarea
+                        placeholder="What do you want to create?"
+                        className="w-full min-h-32 text-base border-none bg-transparent focus-visible:ring-0 shadow-none resize-none pb-14 pr-20"
+                        value={editedRequest}
+                        onChange={(e) => setEditedRequest(e.target.value)}
+                        disabled={isLoadingRequest || isGeneratingPlaybook}
+                      />
+                      {editedRequest && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="absolute right-16 bottom-4 cursor-pointer"
+                          onClick={handleCancelEdit}
+                          disabled={isLoadingRequest || isGeneratingPlaybook}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button
+                        size={isLoadingRequest ? "default" : "icon"}
+                        className="absolute right-4 bottom-4 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+                        onClick={handleSaveRequest}
+                        disabled={isLoadingRequest || isGeneratingPlaybook || !editedRequest.trim()}
+                      >
+                        {isLoadingRequest ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Analyzing
+                          </>
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="border rounded-2xl p-4 shadow-md w-full relative">
+                      <div className="w-full min-h-32 text-base bg-transparent pb-14 pr-20">
+                        <p className="text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap">
+                          {userRequest}
+                        </p>
+                      </div>
+                      <button
+                        className="absolute right-4 bottom-4 cursor-pointer p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={handleEditRequest}
+                        title="Edit your request"
+                        disabled={isAnyAIGenerating || isGeneratingPlaybook}
+                      >
+                        <PenTool className="w-4 h-4 text-gray-500 hover:text-primary" />
+                      </button>
+                    </div>
                   )}
-                  <Button
-                    size={isLoadingRequest ? "default" : "icon"}
-                    className="absolute right-4 bottom-4 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
-                    onClick={handleSaveRequest}
-                    disabled={isLoadingRequest || isGeneratingPlaybook || !editedRequest.trim()}
-                  >
-                    {isLoadingRequest ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Analyzing
-                      </>
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <div className="border rounded-2xl p-4 shadow-md w-full relative">
-                  <div className="w-full min-h-32 text-base bg-transparent pb-14 pr-20">
-                    <p className="text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap">
-                      {userRequest}
-                    </p>
-                  </div>
-                  <button
-                    className="absolute right-4 bottom-4 cursor-pointer p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={handleEditRequest}
-                    title="Edit your request"
-                    disabled={isAnyAIGenerating || isGeneratingPlaybook}
-                  >
-                    <PenTool className="w-4 h-4 text-gray-500 hover:text-primary" />
-                  </button>
                 </div>
               )}
             </div>

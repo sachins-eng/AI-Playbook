@@ -88,7 +88,7 @@ function Hero() {
             className="block dark:hidden"
             animationStyle="from-center"
             videoSrc="https://www.youtube.com/embed/TsIN9h07lq0"
-            thumbnailSrc="https://mma.prnewswire.com/media/2401528/1_MindtripProduct.jpg?p=facebook"
+            thumbnailSrc="/hero-image.png"
             thumbnailAlt="Dummy Video Thumbnail"
           />
         </div>
