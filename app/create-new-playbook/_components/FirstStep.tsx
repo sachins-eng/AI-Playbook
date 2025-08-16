@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send, Loader2, X, Paperclip, FileText } from "lucide-react";
-import { useAnalyze } from "@/context/AnalyzeContext";
+import { usePlaybookStore } from "@/store/playbookStore";
 
 function ChatBox() {
   const [goal, setGoal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const { userRequest, setUserRequest, setApiResult, setCurrentView } = useAnalyze();
+  const { userRequest, setUserRequest, setApiResult, setCurrentView } = usePlaybookStore();
 
   // Pre-populate with existing request when component mounts
   React.useEffect(() => {

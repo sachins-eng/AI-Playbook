@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Sparkles, X, Loader2, PenTool, Send, ChevronDown, ChevronUp } from "lucide-react";
-import { useAnalyze } from "@/context/AnalyzeContext";
+import { usePlaybookStore } from "@/store/playbookStore";
 import { useRouter } from "next/navigation";
 
 function SecondStep() {
-  const { userRequest, apiResult, setCurrentView, setUserRequest, setApiResult, setPlaybookData } = useAnalyze();
+  const { userRequest, apiResult, setCurrentView, setUserRequest, setApiResult, setPlaybookData } = usePlaybookStore();
   const router = useRouter();
   const [questionAnswers, setQuestionAnswers] = useState<Record<number, string>>({});
   const [skippedQuestions, setSkippedQuestions] = useState<Record<number, boolean>>({});
