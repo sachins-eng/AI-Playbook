@@ -1,0 +1,92 @@
+"use client";
+import React from "react";
+import { usePlaybookDetailsStore } from "@/store/playbookDetailsStore";
+
+function PlaybookSequence() {
+  const { playbookData } = usePlaybookDetailsStore();
+
+  return (
+    <div className="p-4">
+      {playbookData?.playbook?.chapters ? (
+        <div className="flex gap-6 overflow-x-auto h-full">
+          {/* Each chapter */}
+          {playbookData.playbook.chapters.map((chapter: any, chapterIndex: number) => (
+            <div key={chapterIndex} className="flex flex-col min-w-[400px] flex-shrink-0 h-full">
+              {/* Chapter Header */}
+              <div className="bg-white p-3 rounded-lg shadow text-center mb-2">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {chapter.chapter_name}
+                </h2>
+                <p className="mt-1 mb-2 text-xs font-normal text-gray-500">
+                  {chapter.chapter_description}
+                </p>
+              </div>
+
+              {/* Stages in Horizontal Row */}
+              <div className="flex gap-4 overflow-x-auto flex-1">
+                {/* Each Stage */}
+                {chapter.sections?.map((stage: any, stageIndex: number) => (
+                  <div 
+                    key={stageIndex} 
+                    className="bg-white p-3 rounded-lg shadow-md w-[280px] flex-shrink-0 flex flex-col h-full"
+                  >
+                    <div className="font-semibold text-gray-900 mb-1">
+                      <p>{stage.section_name}</p>
+                      <p className="mt-1 mb-2 text-xs font-normal text-gray-500">
+                        {stage.section_description}
+                      </p>
+                    </div>
+                    <div className="text-sm font-medium text-blue-600 mb-2">
+                      {stage.subsections?.length || 0} Activities
+                    </div>
+
+                    {/* Activities (fill remaining height and scroll vertically) */}
+                    <div className="flex-1 overflow-y-auto pr-1">
+                      {stage.subsections?.map((activity: any, activityIndex: number) => (
+                        <div 
+                          key={activityIndex}
+                          className="bg-gray-100 p-2 mb-2 rounded text-sm shadow-sm"
+                        >
+                          <p className="font-medium">{activity.subsection_name}</p>
+                          <p className="mt-2 text-xs text-gray-600">
+                            {activity.subsection_description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : playbookData ? (
+        /* Fallback: Show raw JSON if structure doesn't match expected format */
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Playbook Data
+          </h2>
+          <div className="bg-gray-50 rounded-lg p-4 overflow-auto max-h-[70vh]">
+            <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+              {JSON.stringify(playbookData, null, 2)}
+            </pre>
+          </div>
+        </div>
+      ) : (
+        /* No data state */
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">
+              No Playbook Data
+            </h2>
+            <p className="text-gray-600">
+              No sequence data available.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default PlaybookSequence;

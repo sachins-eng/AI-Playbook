@@ -1,25 +1,42 @@
-"use client"
-import React, { useState } from 'react';
-import { 
-  Menu, 
-  X, 
-  LayoutDashboard, 
-  User, 
-  Settings, 
-  NotebookText,
-  FolderTree,
-  Network,
-  BarChart3
-} from 'lucide-react';
+"use client";
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  User,
+  Settings,
+  Home,
+  BarChart3,
+  Info,
+  Users,
+} from "lucide-react";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState('Details');
+  const pathname = usePathname();
 
-  const menuItems = [
-    { name: 'Details', icon: NotebookText, href: '#' },
-    { name: 'Sequence View', icon: FolderTree, href: '#' },
-    { name: 'Roles View', icon: Network, href: '#' },
+  const playbookNavItems = [
+    {
+      name: "Details",
+      icon: Info,
+      href: "/playbook/details",
+      description: "Playbook information",
+    },
+    {
+      name: "Sequence",
+      icon: BarChart3,
+      href: "/playbook/sequence",
+      description: "View playbook workflow",
+    },
+    {
+      name: "Roles",
+      icon: Users,
+      href: "/playbook/roles",
+      description: "Team roles and responsibilities",
+    },
   ];
 
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -45,36 +62,42 @@ const Sidebar = () => {
       {/* Sidebar */}
       <div
         className={`fixed top-20 left-0 h-full bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700 transition-all duration-300 ease-in-out z-40 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0 lg:w-20 w-64 shadow-2xl`}
       >
-        {/* Navigation */}
-        <nav className="flex-1 mt-4 p-4 space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeItem === item.name;
-            
-            return (
-              <button
-                key={item.name}
-                onClick={() => setActiveItem(item.name)}
-                className={`w-full flex items-center justify-center px-4 py-3 rounded-lg transition-all duration-200 group ${
-                  isActive
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-                title={item.name}
-              >
-                <Icon 
-                  size={20} 
-                  className={`transition-colors duration-200 ${
-                    isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
-                  }`}
-                />
-              </button>
-            );
-          })}
-        </nav>
+        {/* Playbook Navigation Section */}
+        <div className="mt-8 px-4">
+          <div className="border-t border-slate-700 pt-4">
+            <div className="space-y-2">
+              {playbookNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`w-full flex items-center justify-center px-4 py-3 rounded-lg transition-all duration-200 group ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                        : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                    }`}
+                    title={item.name}
+                  >
+                    <Icon
+                      size={20}
+                      className={`transition-colors duration-200 ${
+                        isActive
+                          ? "text-white"
+                          : "text-slate-400 group-hover:text-white"
+                      }`}
+                    />
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

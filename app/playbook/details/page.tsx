@@ -1,0 +1,105 @@
+"use client";
+import React from "react";
+import { usePlaybookDetailsStore } from "@/store/playbookDetailsStore";
+
+function PlaybookDetails() {
+  const { playbookData, hasHydrated } = usePlaybookDetailsStore();
+
+  // Show loading state while hydrating
+  if (!hasHydrated) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!playbookData) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            No Playbook Data
+          </h2>
+          <p className="text-gray-600">
+            No playbook details available.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Playbook Details</h1>
+      
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Basic Information
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
+              Name
+            </label>
+            <p className="text-gray-900">{playbookData?.playbook?.name || "Unnamed Playbook"}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
+              Type
+            </label>
+            <p className="text-gray-900">{playbookData?.playbook?.type || "Not specified"}</p>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
+              Description
+            </label>
+            <p className="text-gray-900">{playbookData?.playbook?.description || "No description available"}</p>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
+              Context
+            </label>
+            <p className="text-gray-900">{playbookData?.playbook?.context || "No context provided"}</p>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
+              Prerequisites
+            </label>
+            <div className="text-gray-900">
+              {playbookData?.playbook?.prerequisites ? (
+                Array.isArray(playbookData.playbook.prerequisites) ? (
+                  <ul className="list-disc list-inside space-y-1">
+                    {playbookData.playbook.prerequisites.map((prerequisite: string, index: number) => (
+                      <li key={index}>{prerequisite}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>{playbookData.playbook.prerequisites}</p>
+                )
+              ) : (
+                <p className="text-gray-500 italic">No prerequisites specified</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Raw Data
+        </h2>
+        <div className="bg-gray-50 rounded-lg p-4 overflow-auto max-h-96">
+          <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+            {JSON.stringify(playbookData, null, 2)}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default PlaybookDetails;
