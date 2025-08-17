@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, Copy, FileText } from "lucide-react";
+import { Download, Copy, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { usePlaybookDetailsStore } from "@/store/playbookDetailsStore";
 import Sidebar from "./_components/sidebar";
@@ -178,7 +178,7 @@ function PlaybookDetails() {
               </p>
               <Button
                 variant="default"
-                onClick={() => router.push("/create-new-playbook")}
+                onClick={() => router.push("/new-playbook")}
               >
                 Create New Playbook
               </Button>

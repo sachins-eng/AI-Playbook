@@ -58,7 +58,7 @@ function Header() {
         </SignInButton>
       ) : (
         <div className="flex items-center gap-4">
-          <Link href="/create-new-playbook" onClick={clearData}>
+          <Link href="/new-playbook" onClick={clearData}>
             <button className="bg-primary text-white rounded-md px-4 py-2 font-bold transition-all duration-300 hover:scale-105">
               New Playbook
             </button>

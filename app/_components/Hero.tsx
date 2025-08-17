@@ -32,7 +32,7 @@ function Hero() {
       router.push("/sign-in");
       return;
     }
-    router.push("/create-new-playbook");
+    router.push("/new-playbook");
   };
 
   return (

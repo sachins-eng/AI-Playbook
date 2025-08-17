@@ -108,7 +108,7 @@ function SecondStep() {
         }
         // Store playbook data in context and navigate to playbook details page
         setPlaybookData(data);
-        router.push('/playbook-details');
+        router.push('/playbook');
       } else {
         console.error("Playbook API Error:", response.status);
         setErrorMessage("Failed to generate playbook. Please try again.");
