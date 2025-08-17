@@ -21,7 +21,7 @@ const SubsectionDrawer: React.FC<SubsectionDrawerProps> = ({
 
       {/* Drawer */}
       <div
-        className={`fixed top-20 right-0 h-[calc(100vh-80px)] w-[460px] bg-white shadow-2xl z-60 ${
+        className={`fixed top-20 right-0 h-[calc(100vh-80px)] w-[500px] bg-white shadow-2xl z-60 ${
           isOpen 
             ? "animate-drawer-slide-in" 
             : "animate-drawer-slide-out transform translate-x-full opacity-0"

@@ -19,9 +19,9 @@ function PlaybookSequence() {
   };
 
   return (
-    <div className={`p-4 transition-all duration-400 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isDrawerOpen ? 'pr-[460px]' : ''}`}>
+    <div className={`p-4 transition-all duration-400 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isDrawerOpen ? 'pr-[500px]' : ''}`} style={{ overflowX: 'auto' }}>
       {playbookData?.playbook?.chapters ? (
-        <div className="flex gap-6 overflow-x-auto h-full">
+        <div className="flex gap-6 overflow-x-auto h-full" style={{ minWidth: 'max-content', width: 'max-content' }}>
           {/* Each chapter */}
           {playbookData.playbook.chapters.map((chapter: any, chapterIndex: number) => (
             <div 
