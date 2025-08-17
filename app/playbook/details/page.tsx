@@ -34,38 +34,38 @@ function PlaybookDetails() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Playbook Details</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6 animate-fade-in-up">Playbook Details</h1>
       
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="bg-white rounded-lg shadow p-6 mb-6 animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}>
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Basic Information
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div className="animate-slide-in-right" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
             <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
               Name
             </label>
             <p className="text-gray-900">{playbookData?.playbook?.name || "Unnamed Playbook"}</p>
           </div>
-          <div>
+          <div className="animate-slide-in-right" style={{ animationDelay: '250ms', animationFillMode: 'backwards' }}>
             <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
               Type
             </label>
             <p className="text-gray-900">{playbookData?.playbook?.type || "Not specified"}</p>
           </div>
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
             <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
               Description
             </label>
             <p className="text-gray-900">{playbookData?.playbook?.description || "No description available"}</p>
           </div>
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 animate-fade-in" style={{ animationDelay: '350ms', animationFillMode: 'backwards' }}>
             <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
               Context
             </label>
             <p className="text-gray-900">{playbookData?.playbook?.context || "No context provided"}</p>
           </div>
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 animate-fade-in" style={{ animationDelay: '400ms', animationFillMode: 'backwards' }}>
             <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">
               Prerequisites
             </label>
@@ -88,11 +88,11 @@ function PlaybookDetails() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-6 animate-fade-in-up" style={{ animationDelay: '500ms', animationFillMode: 'backwards' }}>
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Raw Data
         </h2>
-        <div className="bg-gray-50 rounded-lg p-4 overflow-auto max-h-96">
+        <div className="bg-gray-50 rounded-lg p-4 overflow-auto max-h-96 animate-fade-in" style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}>
           <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
             {JSON.stringify(playbookData, null, 2)}
           </pre>

@@ -11,9 +11,16 @@ function PlaybookSequence() {
         <div className="flex gap-6 overflow-x-auto h-full">
           {/* Each chapter */}
           {playbookData.playbook.chapters.map((chapter: any, chapterIndex: number) => (
-            <div key={chapterIndex} className="flex flex-col min-w-[400px] flex-shrink-0 h-full">
+            <div 
+              key={chapterIndex} 
+              className="flex flex-col min-w-[400px] flex-shrink-0 h-full animate-fade-in-up"
+              style={{ 
+                animationDelay: `${chapterIndex * 150}ms`,
+                animationFillMode: 'backwards'
+              }}
+            >
               {/* Chapter Header */}
-              <div className="bg-white p-3 rounded-lg shadow text-center mb-2">
+              <div className="bg-white p-3 rounded-lg shadow text-center mb-2 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 <h2 className="text-lg font-semibold text-gray-800">
                   {chapter.chapter_name}
                 </h2>
@@ -28,7 +35,11 @@ function PlaybookSequence() {
                 {chapter.sections?.map((stage: any, stageIndex: number) => (
                   <div 
                     key={stageIndex} 
-                    className="bg-white p-3 rounded-lg shadow-md w-[280px] flex-shrink-0 flex flex-col h-full"
+                    className="bg-white p-4 rounded-lg shadow-md w-[280px] flex-shrink-0 flex flex-col h-full transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-slide-in-right"
+                    style={{ 
+                      animationDelay: `${(chapterIndex * 150) + (stageIndex * 100)}ms`,
+                      animationFillMode: 'backwards'
+                    }}
                   >
                     <div className="font-semibold text-gray-900 mb-1">
                       <p>{stage.section_name}</p>
@@ -45,7 +56,11 @@ function PlaybookSequence() {
                       {stage.subsections?.map((activity: any, activityIndex: number) => (
                         <div 
                           key={activityIndex}
-                          className="bg-gray-100 p-2 mb-2 rounded text-sm shadow-sm"
+                          className="bg-gray-100 p-4 mb-2 rounded text-sm shadow-sm transform transition-all duration-200 hover:bg-gray-200 hover:scale-105 animate-fade-in cursor-pointer"
+                          style={{ 
+                            animationDelay: `${(chapterIndex * 150) + (stageIndex * 100) + (activityIndex * 50)}ms`,
+                            animationFillMode: 'backwards'
+                          }}
                         >
                           <p className="font-medium">{activity.subsection_name}</p>
                           <p className="mt-2 text-xs text-gray-600">
