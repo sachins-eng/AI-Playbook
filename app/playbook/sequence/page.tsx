@@ -1,12 +1,25 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { usePlaybookDetailsStore } from "@/store/playbookDetailsStore";
+import SubsectionDrawer from "./_components/SubsectionDrawer";
 
 function PlaybookSequence() {
   const { playbookData } = usePlaybookDetailsStore();
+  const [selectedSubsection, setSelectedSubsection] = useState<any>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const handleSubsectionClick = (subsection: any) => {
+    setSelectedSubsection(subsection);
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    setTimeout(() => setSelectedSubsection(null), 400); // Wait for animation to complete
+  };
 
   return (
-    <div className="p-4">
+    <div className={`p-4 transition-all duration-400 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isDrawerOpen ? 'pr-[460px]' : ''}`}>
       {playbookData?.playbook?.chapters ? (
         <div className="flex gap-6 overflow-x-auto h-full">
           {/* Each chapter */}
@@ -61,6 +74,7 @@ function PlaybookSequence() {
                             animationDelay: `${(chapterIndex * 150) + (stageIndex * 100) + (activityIndex * 50)}ms`,
                             animationFillMode: 'backwards'
                           }}
+                          onClick={() => handleSubsectionClick(activity)}
                         >
                           <p className="font-medium">{activity.subsection_name}</p>
                           <p className="mt-2 text-xs text-gray-600">
@@ -100,6 +114,13 @@ function PlaybookSequence() {
           </div>
         </div>
       )}
+
+      {/* Off-canvas Drawer */}
+      <SubsectionDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        subsection={selectedSubsection}
+      />
     </div>
   );
 }
