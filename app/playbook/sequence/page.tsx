@@ -5,10 +5,13 @@ import SubsectionDrawer from "./_components/SubsectionDrawer";
 import { MoreVertical, Trash2, Plus } from "lucide-react";
 
 function PlaybookSequence() {
-  const { playbookData } = usePlaybookDetailsStore();
+  const { playbookData, moveSubsection, reorderSubsection } = usePlaybookDetailsStore();
   const [selectedSubsection, setSelectedSubsection] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [successDropId, setSuccessDropId] = useState<string | null>(null);
 
   const handleSubsectionClick = (subsection: any) => {
     setSelectedSubsection(subsection);
@@ -67,6 +70,7 @@ function PlaybookSequence() {
     setOpenDropdown(null);
   };
 
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
@@ -79,10 +83,12 @@ function PlaybookSequence() {
     }
   }, [openDropdown]);
 
+
   return (
-    <div className={`p-4 transition-all duration-400 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isDrawerOpen ? 'pr-[500px]' : ''}`} style={{ overflowX: 'auto' }}>
-      {playbookData?.playbook?.chapters ? (
-        <div className="flex gap-6 overflow-x-auto h-full" style={{ minWidth: 'max-content', width: 'max-content' }}>
+    <div>
+      <div className={`p-4 transition-all duration-400 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isDrawerOpen ? 'pr-[500px]' : ''}`} style={{ overflowX: 'auto' }}>
+        {playbookData?.playbook?.chapters ? (
+          <div className="flex gap-6 overflow-x-auto h-full" style={{ minWidth: 'max-content', width: 'max-content' }}>
           {/* Each chapter */}
           {playbookData.playbook.chapters.map((chapter: any, chapterIndex: number) => (
             <div 
@@ -200,13 +206,132 @@ function PlaybookSequence() {
                     </div>
 
                     {/* Activities (fill remaining height and scroll vertically) */}
-                    <div className={`flex-1 pr-1 ${isDrawerOpen ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+                    <div 
+                      className={`flex-1 pr-1 ${isDrawerOpen ? 'overflow-hidden' : 'overflow-y-auto'} ${
+                        draggedItemId && dropTargetId === `section-${chapterIndex}-${stageIndex}` 
+                          ? 'bg-blue-50 border-2 border-blue-300 border-dashed rounded-lg' 
+                          : ''
+                      }`}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (draggedItemId) {
+                          setDropTargetId(`section-${chapterIndex}-${stageIndex}`);
+                        }
+                      }}
+                      onDragLeave={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                          setDropTargetId(null);
+                        }
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const draggedId = e.dataTransfer.getData('text/plain');
+                        if (draggedId) {
+                          const [draggedChapter, draggedSection, draggedSubsection] = draggedId.split('-').map(Number);
+                          
+                          // Move subsection to end of target section
+                          moveSubsection(
+                            draggedChapter, 
+                            draggedSection, 
+                            draggedSubsection,
+                            chapterIndex, 
+                            stageIndex
+                          );
+                          
+                          console.log('Section drop - subsection moved:', {
+                            from: { chapter: draggedChapter, section: draggedSection, subsection: draggedSubsection },
+                            to: { chapter: chapterIndex, section: stageIndex }
+                          });
+                        }
+                        setDropTargetId(null);
+                      }}
+                    >
+                      {/* Empty state indicator for better drop UX */}
+                      {(!stage.subsections || stage.subsections.length === 0) && draggedItemId && (
+                        <div className="flex items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm">
+                          <div className="text-center">
+                            <div className="mb-2">📥</div>
+                            <div>Drop subsection here</div>
+                          </div>
+                        </div>
+                      )}
+                      
                       {stage.subsections?.map((activity: any, activityIndex: number) => {
                         const subsectionId = `${chapterIndex}-${stageIndex}-${activityIndex}`;
                         return (
                           <div 
                             key={activityIndex}
-                            className={`bg-gray-100 p-4 mb-2 rounded text-sm shadow-sm transform transition-all duration-200 hover:bg-gray-200 hover:scale-105 animate-fade-in cursor-pointer relative group ${openDropdown === subsectionId ? 'z-[101]' : 'z-10'}`}
+                            draggable={true}
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('text/plain', subsectionId);
+                              e.dataTransfer.effectAllowed = 'move';
+                              setDraggedItemId(subsectionId);
+                              console.log('Drag started:', subsectionId);
+                            }}
+                            onDragEnd={() => {
+                              setDraggedItemId(null);
+                              setDropTargetId(null);
+                            }}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.dataTransfer.dropEffect = 'move';
+                              if (draggedItemId && draggedItemId !== subsectionId) {
+                                setDropTargetId(subsectionId);
+                              }
+                            }}
+                            onDragLeave={(e) => {
+                              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                                setDropTargetId(null);
+                              }
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation(); // Prevent event from bubbling up to section container
+                              const draggedId = e.dataTransfer.getData('text/plain');
+                              if (draggedId !== subsectionId) {
+                                const [draggedChapter, draggedSection, draggedSubsection] = draggedId.split('-').map(Number);
+                                
+                                // Determine if moving within same section or between sections
+                                if (draggedChapter === chapterIndex && draggedSection === stageIndex) {
+                                  // Reorder within same section
+                                  reorderSubsection(chapterIndex, stageIndex, draggedSubsection, activityIndex);
+                                  console.log('Reorder within section:', {
+                                    chapter: chapterIndex, section: stageIndex,
+                                    from: draggedSubsection, to: activityIndex
+                                  });
+                                } else {
+                                  // Move between different sections
+                                  moveSubsection(
+                                    draggedChapter, 
+                                    draggedSection, 
+                                    draggedSubsection,
+                                    chapterIndex, 
+                                    stageIndex, 
+                                    activityIndex
+                                  );
+                                  console.log('Move between sections:', {
+                                    from: { chapter: draggedChapter, section: draggedSection, subsection: draggedSubsection },
+                                    to: { chapter: chapterIndex, section: stageIndex, subsection: activityIndex }
+                                  });
+                                }
+                                
+                                // Show success animation
+                                setSuccessDropId(subsectionId);
+                                setTimeout(() => setSuccessDropId(null), 600);
+                              }
+                              setDropTargetId(null);
+                            }}
+                            className={`p-4 mb-2 rounded text-sm shadow-sm transform transition-all duration-300 animate-fade-in cursor-move relative group ${
+                              openDropdown === subsectionId ? 'z-[101]' : 'z-10'
+                            } ${
+                              successDropId === subsectionId
+                                ? 'bg-green-200 border-2 border-green-500 shadow-xl animate-bounce-in'
+                                : draggedItemId === subsectionId 
+                                ? 'bg-blue-100 border-2 border-blue-400 shadow-xl opacity-60 animate-drag-pulse' 
+                                : dropTargetId === subsectionId
+                                ? 'bg-green-100 border-2 border-green-400 border-dashed shadow-lg scale-102 animate-drop-zone-glow'
+                                : 'bg-gray-100 hover:bg-gray-200 hover:scale-105'
+                            }`}
                             style={{ 
                               animationDelay: `${(chapterIndex * 150) + (stageIndex * 100) + (activityIndex * 50)}ms`,
                               animationFillMode: 'backwards'
@@ -227,7 +352,7 @@ function PlaybookSequence() {
                                   >
                                     <MoreVertical className="w-4 h-4 text-gray-600" />
                                   </button>
-                                
+                                  
                                   {/* Dropdown Menu */}
                                   {openDropdown === subsectionId && (
                                     <div className="absolute right-0 top-8 z-[100] bg-white border border-gray-200 rounded-lg shadow-xl py-1 min-w-[160px]">
@@ -298,12 +423,13 @@ function PlaybookSequence() {
         </div>
       )}
 
-      {/* Off-canvas Drawer */}
-      <SubsectionDrawer
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-        subsection={selectedSubsection}
-      />
+        {/* Off-canvas Drawer */}
+        <SubsectionDrawer
+          isOpen={isDrawerOpen}
+          onClose={handleCloseDrawer}
+          subsection={selectedSubsection}
+        />
+      </div>
     </div>
   );
 }
