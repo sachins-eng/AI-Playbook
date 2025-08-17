@@ -43,7 +43,7 @@ function PlaybookSequence() {
               </div>
 
               {/* Stages in Horizontal Row */}
-              <div className="flex gap-4 overflow-x-auto flex-1">
+              <div className={`flex gap-4 flex-1 ${isDrawerOpen ? 'overflow-hidden' : 'overflow-x-auto'}`}>
                 {/* Each Stage */}
                 {chapter.sections?.map((stage: any, stageIndex: number) => (
                   <div 
@@ -65,7 +65,7 @@ function PlaybookSequence() {
                     </div>
 
                     {/* Activities (fill remaining height and scroll vertically) */}
-                    <div className="flex-1 overflow-y-auto pr-1">
+                    <div className={`flex-1 pr-1 ${isDrawerOpen ? 'overflow-hidden' : 'overflow-y-auto'}`}>
                       {stage.subsections?.map((activity: any, activityIndex: number) => (
                         <div 
                           key={activityIndex}
