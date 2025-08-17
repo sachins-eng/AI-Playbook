@@ -3,18 +3,15 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download, Copy, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { usePlaybookStore } from "@/store/playbookStore";
-import Sidebar from "../../components/ui/sidebar";
+import { usePlaybookDetailsStore } from "@/store/playbookDetailsStore";
+import Sidebar from "./_components/sidebar";
+import { Badge } from "@/components/ui/badge"
 
 function PlaybookDetails() {
   const router = useRouter();
-  const { playbookData, hasHydrated } = usePlaybookStore();
+  const { playbookData, hasHydrated } = usePlaybookDetailsStore();
 
   console.log("Playbook Data from Zustand store:", playbookData);
-
-  const handleBack = () => {
-    router.back();
-  };
 
   // Show loading state while hydrating
   if (!hasHydrated) {
@@ -69,10 +66,11 @@ function PlaybookDetails() {
           {/* Header with navigation and actions - only shown when playbook data exists */}
           {playbookData && (
             <div className="bg-white shadow-sm p-4 flex items-center justify-between">
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-gray-800">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-gray-800 leading-none">
                   {playbookData?.playbook?.name || "Generated Playbook"}
                 </h1>
+                <Badge variant="outline" className="flex items-center text-base mt-1 border-pink-600">{playbookData?.playbook.type}</Badge>
               </div>
               
               <div className="flex gap-2">

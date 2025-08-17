@@ -1,11 +1,11 @@
 "use client";
 import React from 'react'
-import { usePlaybookStore } from '@/store/playbookStore'
+import { useNewPlaybookStore } from '@/store/newPlaybookStore'
 import FirstStep from './_components/FirstStep'
 import SecondStep from './_components/SecondStep'
 
 function page() {
-  const { currentView, hasHydrated } = usePlaybookStore();
+  const { currentView, hasHydrated } = useNewPlaybookStore();
 
   // Show loading state while hydrating
   if (!hasHydrated) {

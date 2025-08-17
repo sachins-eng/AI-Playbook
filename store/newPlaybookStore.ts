@@ -1,42 +1,47 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface PlaybookState {
+interface NewPlaybookState {
   userRequest: string
   apiResult: any
   currentView: 'input' | 'result'
-  playbookData: any
+  questionAnswers: Record<number, string>
+  skippedQuestions: Record<number, boolean>
   hasHydrated: boolean
   setUserRequest: (request: string) => void
   setApiResult: (result: any) => void
   setCurrentView: (view: 'input' | 'result') => void
-  setPlaybookData: (data: any) => void
+  setQuestionAnswers: (answers: Record<number, string>) => void
+  setSkippedQuestions: (skipped: Record<number, boolean>) => void
   clearData: () => void
   setHasHydrated: (state: boolean) => void
 }
 
-export const usePlaybookStore = create<PlaybookState>()(
+export const useNewPlaybookStore = create<NewPlaybookState>()(
   persist(
     (set) => ({
       userRequest: '',
       apiResult: null,
       currentView: 'input',
-      playbookData: null,
+      questionAnswers: {},
+      skippedQuestions: {},
       hasHydrated: false,
       setUserRequest: (request: string) => set({ userRequest: request }),
       setApiResult: (result: any) => set({ apiResult: result }),
       setCurrentView: (view: 'input' | 'result') => set({ currentView: view }),
-      setPlaybookData: (data: any) => set({ playbookData: data }),
+      setQuestionAnswers: (answers: Record<number, string>) => set({ questionAnswers: answers }),
+      setSkippedQuestions: (skipped: Record<number, boolean>) => set({ skippedQuestions: skipped }),
       setHasHydrated: (state: boolean) => set({ hasHydrated: state }),
       clearData: () => set({
         userRequest: '',
         apiResult: null,
         currentView: 'input',
-        playbookData: null,
+        questionAnswers: {},
+        skippedQuestions: {},
       }),
     }),
     {
-      name: 'playbook-storage', // unique name for localStorage key
+      name: 'new-playbook-storage', // unique name for localStorage key
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true)
       },

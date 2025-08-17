@@ -3,14 +3,24 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Sparkles, X, Loader2, PenTool, Send, ChevronDown, ChevronUp } from "lucide-react";
-import { usePlaybookStore } from "@/store/playbookStore";
+import { useNewPlaybookStore } from "@/store/newPlaybookStore";
+import { usePlaybookDetailsStore } from "@/store/playbookDetailsStore";
 import { useRouter } from "next/navigation";
 
 function SecondStep() {
-  const { userRequest, apiResult, setCurrentView, setUserRequest, setApiResult, setPlaybookData } = usePlaybookStore();
+  const { 
+    userRequest, 
+    apiResult, 
+    setCurrentView, 
+    setUserRequest, 
+    setApiResult,
+    questionAnswers,
+    skippedQuestions,
+    setQuestionAnswers,
+    setSkippedQuestions
+  } = useNewPlaybookStore();
+  const { setPlaybookData } = usePlaybookDetailsStore();
   const router = useRouter();
-  const [questionAnswers, setQuestionAnswers] = useState<Record<number, string>>({});
-  const [skippedQuestions, setSkippedQuestions] = useState<Record<number, boolean>>({});
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [loadingAnswers, setLoadingAnswers] = useState<Record<number, boolean>>({});
   const [isEditingRequest, setIsEditingRequest] = useState(false);
@@ -24,10 +34,10 @@ function SecondStep() {
   };
 
   const handleAnswerChange = (questionIndex: number, answer: string) => {
-    setQuestionAnswers(prev => ({
-      ...prev,
+    setQuestionAnswers({
+      ...questionAnswers,
       [questionIndex]: answer
-    }));
+    });
   };
 
   const handleGenerateDraftAnswer = async (questionIndex: number, question: string) => {
@@ -70,10 +80,10 @@ function SecondStep() {
   };
 
   const handleToggleSkip = (questionIndex: number) => {
-    setSkippedQuestions(prev => ({
-      ...prev,
-      [questionIndex]: !prev[questionIndex]
-    }));
+    setSkippedQuestions({
+      ...skippedQuestions,
+      [questionIndex]: !skippedQuestions[questionIndex]
+    });
     // Clear answer when skipping
     if (!skippedQuestions[questionIndex]) {
       handleAnswerChange(questionIndex, "");
@@ -93,7 +103,9 @@ function SecondStep() {
       if (response.ok) {
         const data = await response.json();
         console.log("Playbook API Response:", data);
-        data.type = payload.type;
+        if (data.playbook) {
+          data.playbook.type = payload.type;
+        }
         // Store playbook data in context and navigate to playbook details page
         setPlaybookData(data);
         router.push('/playbook-details');

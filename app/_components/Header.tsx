@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SignInButton, UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
-import { usePlaybookStore } from "@/store/playbookStore";
+import { useNewPlaybookStore } from "@/store/newPlaybookStore";
 
 const menuOptionsBeforeLogin = [
   { name: "Home", href: "/" },
@@ -21,7 +21,7 @@ const menuOptionsAfterLogin = [
 
 function Header() {
   const { user, isLoaded } = useUser();
-  const { clearData } = usePlaybookStore();
+  const { clearData } = useNewPlaybookStore();
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center py-4 px-8 bg-primary-foreground">

@@ -6,22 +6,20 @@ import {
   LayoutDashboard, 
   User, 
   Settings, 
-  LogOut,
-  ChevronLeft,
-  Home,
+  NotebookText,
+  FolderTree,
+  Network,
   BarChart3
 } from 'lucide-react';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState('Dashboard');
+  const [activeItem, setActiveItem] = useState('Details');
 
   const menuItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, href: '#' },
-    { name: 'Home', icon: Home, href: '#' },
-    { name: 'Analytics', icon: BarChart3, href: '#' },
-    { name: 'Profile', icon: User, href: '#' },
-    { name: 'Settings', icon: Settings, href: '#' },
+    { name: 'Details', icon: NotebookText, href: '#' },
+    { name: 'Sequence View', icon: FolderTree, href: '#' },
+    { name: 'Roles View', icon: Network, href: '#' },
   ];
 
   const toggleSidebar = () => setIsOpen(!isOpen);
