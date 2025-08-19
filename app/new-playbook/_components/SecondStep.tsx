@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Sparkles, X, Loader2, PenTool, Send, ChevronDown, ChevronUp } from "lucide-react";
@@ -28,6 +28,15 @@ function SecondStep() {
   const [isLoadingRequest, setIsLoadingRequest] = useState(false);
   const [isGeneratingPlaybook, setIsGeneratingPlaybook] = useState(false);
   const [isRequestExpanded, setIsRequestExpanded] = useState(true);
+  const [cachedQuestions, setCachedQuestions] = useState<any[]>([]);
+
+  // Cache questions when apiResult.questions.questions is available
+  useEffect(() => {
+    if (apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions)) {
+      setCachedQuestions(apiResult.questions.questions);
+      console.log("Cached questions:", apiResult.questions.questions);
+    }
+  }, [apiResult?.questions?.questions]);
 
   const handleBack = () => {
     setCurrentView('input');
@@ -134,12 +143,16 @@ function SecondStep() {
       if (response.ok) {
         const data = await response.json();
         console.log("Context API Response:", data);
-        // Update apiResult context with the response
+        // Update apiResult context with the response  
         const updatedContext = data.updated_context || data.context || data;
-        setApiResult((prev: any) => ({
-          ...prev,
+        console.log("About to update apiResult, current:", apiResult);
+        
+        const newApiResult = {
+          ...apiResult,
           context: updatedContext
-        }));
+        };
+        console.log("Setting new apiResult:", newApiResult);
+        setApiResult(newApiResult);
         
         // Call playbook API after context is updated
         await handlePlaybookAPI({
@@ -386,10 +399,25 @@ function SecondStep() {
               <h2 className="text-xl font-semibold mb-4 text-neutral-700 dark:text-neutral-300 flex-shrink-0">
                 Your inputs will help us to create the perfect playbook
               </h2>
+              
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 flex-1 overflow-y-auto min-h-0 mb-4">
-                {apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions) ? (
-                  <div className="space-y-6">
-                    {apiResult.questions.questions.map((questionObj: any, index: number) => (
+                {(() => {
+                  console.log("Rendering questions section, apiResult:", apiResult);
+                  console.log("Questions available:", !!apiResult?.questions?.questions);
+                  console.log("Questions array length:", apiResult?.questions?.questions?.length);
+                  console.log("Cached questions length:", cachedQuestions.length);
+                  return null;
+                })()}
+                {(() => {
+                  // Use apiResult questions if available, otherwise fall back to cached questions
+                  const questionsToRender = (apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions)) 
+                    ? apiResult.questions.questions 
+                    : cachedQuestions;
+                  
+                  if (questionsToRender && questionsToRender.length > 0) {
+                    return (
+                      <div className="space-y-6">
+                        {questionsToRender.map((questionObj: any, index: number) => (
                       <div key={index} className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm">
                         <div className="mb-3">
                           <h3 className="text-base font-semibold text-neutral-800 dark:text-neutral-200">
@@ -453,18 +481,22 @@ function SecondStep() {
                           )}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-neutral-600 dark:text-neutral-400 italic text-center">
-                      No questions available
-                    </p>
-                  </div>
-                )}
+                        ))}
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-neutral-600 dark:text-neutral-400 italic text-center">
+                          No questions available
+                        </p>
+                      </div>
+                    );
+                  }
+                })()}
               </div>
               
-              {apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions) && (
+              {(apiResult?.questions?.questions && Array.isArray(apiResult.questions.questions)) || cachedQuestions.length > 0 ? (
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                   {errorMessage && (
                     <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -489,7 +521,7 @@ function SecondStep() {
                     )}
                   </Button>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

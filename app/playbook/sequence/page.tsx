@@ -86,7 +86,7 @@ function PlaybookSequence() {
 
   return (
     <div>
-      <div className={`p-4 transition-all duration-400 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isDrawerOpen ? 'pr-[500px]' : ''}`} style={{ overflowX: 'auto' }}>
+      <div className={`p-4 transition-all duration-400 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isDrawerOpen ? 'pr-[500px]' : ''}`} style={{ overflowX: 'auto', height: 'calc(100vh - 165px)' }}>
         {playbookData?.playbook?.chapters ? (
           <div className="flex gap-6 overflow-x-auto h-full" style={{ minWidth: 'max-content', width: 'max-content' }}>
           {/* Each chapter */}
@@ -100,7 +100,7 @@ function PlaybookSequence() {
               }}
             >
               {/* Chapter Header */}
-              <div className={`bg-white p-3 rounded-lg shadow text-center mb-2 transform transition-all duration-300 hover:scale-105 hover:shadow-lg relative group ${openDropdown === `chapter-${chapterIndex}` ? 'z-[101]' : 'z-10'}`}>
+              <div className={`bg-white p-3 rounded-lg shadow text-center mb-2 transform transition-all duration-300 hover:shadow-lg relative group ${openDropdown === `chapter-${chapterIndex}` ? 'z-[101]' : 'z-10'}`}>
                 <div>
                   {/* Chapter name and dropdown button */}
                   <div className="flex justify-between items-start mb-2">
@@ -153,7 +153,7 @@ function PlaybookSequence() {
                 {chapter.sections?.map((stage: any, stageIndex: number) => (
                   <div 
                     key={stageIndex} 
-                    className={`bg-white p-4 rounded-lg shadow-md w-[280px] flex-shrink-0 flex flex-col h-full transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-slide-in-right group ${openDropdown === `section-${chapterIndex}-${stageIndex}` ? 'z-[101]' : 'z-10'}`}
+                    className={`bg-white p-4 rounded-lg shadow-md w-[280px] flex-shrink-0 flex flex-col h-full transform transition-all duration-300 hover:shadow-xl animate-slide-in-right group ${openDropdown === `section-${chapterIndex}-${stageIndex}` ? 'z-[101]' : 'z-10'}`}
                     style={{ 
                       animationDelay: `${(chapterIndex * 150) + (stageIndex * 100)}ms`,
                       animationFillMode: 'backwards'
@@ -329,8 +329,8 @@ function PlaybookSequence() {
                                 : draggedItemId === subsectionId 
                                 ? 'bg-blue-100 border-2 border-blue-400 shadow-xl opacity-60 animate-drag-pulse' 
                                 : dropTargetId === subsectionId
-                                ? 'bg-green-100 border-2 border-green-400 border-dashed shadow-lg scale-102 animate-drop-zone-glow'
-                                : 'bg-gray-100 hover:bg-gray-200 hover:scale-105'
+                                ? 'bg-green-100 border-2 border-green-400 border-dashed shadow-lg animate-drop-zone-glow'
+                                : 'bg-gray-100 hover:bg-gray-200'
                             }`}
                             style={{ 
                               animationDelay: `${(chapterIndex * 150) + (stageIndex * 100) + (activityIndex * 50)}ms`,
