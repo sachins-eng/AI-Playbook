@@ -40,6 +40,27 @@ function PlaybookDetails() {
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Basic Information
         </h2>
+        
+        {/* Playbook Image */}
+        {playbookData?.playbook?.imageUrl && (
+          <div className="mb-6 animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'backwards' }}>
+            <label className="block text-sm font-bold text-gray-700 mb-2 uppercase">
+              Cover Image
+            </label>
+            <div className="relative rounded-lg overflow-hidden shadow-md max-w-md">
+              <img
+                src={playbookData.playbook.imageUrl}
+                alt={`Cover image for ${playbookData.playbook.name || 'playbook'}`}
+                className="w-full h-48 object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
+        )}
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="animate-slide-in-right" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
             <label className="block text-sm font-bold text-gray-700 mb-1 uppercase">

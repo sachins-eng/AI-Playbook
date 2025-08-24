@@ -3,44 +3,49 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+    const { request_type, context, count = 3 } = body;
+
     // Validate required fields
-    const { intent, type, context, responses } = body;
-    
-    if (!intent || !type || !context || !responses) {
+    if (!request_type || !context) {
       return NextResponse.json(
-        { error: "Missing required fields: intent, type, context, responses" },
+        { error: "Missing required fields: request_type and context" },
         { status: 400 }
       );
     }
 
-    // Call the external API
-    const response = await fetch(`${process.env.EXTERNAL_API_BASE_URL}/context`, {
+    // Call external API
+    const response = await fetch(`${process.env.EXTERNAL_API_BASE_URL}/images/search`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        intent,
-        type,
+        request_type,
         context,
-        responses,
+        count,
       }),
     });
 
     if (!response.ok) {
-      console.error("External API Error:", response.status, response.statusText);
       return NextResponse.json(
-        { error: "Failed to process context request" },
+        { error: "External API request failed", status: response.status },
         { status: response.status }
       );
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
     
+    // Extract the first regular URL from images list
+    const firstImageUrl = data.images && data.images.length > 0 
+      ? data.images[0].urls?.regular 
+      : null;
+    
+    return NextResponse.json({
+      ...data,
+      firstImageUrl
+    });
   } catch (error) {
-    console.error("Context API Error:", error);
+    console.error("Image search API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

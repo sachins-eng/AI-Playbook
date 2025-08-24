@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call the external API at localhost:8000
-    const response = await fetch("http://localhost:8000/answer/draft", {
+    const response = await fetch(`${process.env.EXTERNAL_API_BASE_URL}/answer/draft`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

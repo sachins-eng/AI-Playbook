@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call the external API
-    const response = await fetch("http://localhost:8000/playbook", {
+    const response = await fetch(`${process.env.EXTERNAL_API_BASE_URL}/playbook`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

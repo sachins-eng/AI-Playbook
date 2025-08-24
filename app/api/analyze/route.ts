@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch("http://0.0.0.0:8000/analyze", {
+    const response = await fetch(`${process.env.EXTERNAL_API_BASE_URL}/analyze`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
