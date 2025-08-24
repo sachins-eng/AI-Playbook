@@ -62,8 +62,15 @@ export async function POST(request: NextRequest) {
       if (imageResponse.ok) {
         const imageData = await imageResponse.json();
         console.log("Image Search API Response:", imageData);
-        if (imageData.firstImageUrl && data.playbook) {
-          data.playbook.imageUrl = imageData.firstImageUrl;
+        if (data.playbook) {
+          // Add image URL if available
+          if (imageData.firstImageUrl) {
+            data.playbook.imageUrl = imageData.firstImageUrl;
+          }
+          // Add keywords if available
+          if (imageData.keywords) {
+            data.playbook.keywords = imageData.keywords;
+          }
         }
       } else {
         console.warn("Image search failed, continuing without image");

@@ -1,9 +1,23 @@
 "use client";
 import React from "react";
 import { usePlaybookDetailsStore } from "@/store/playbookDetailsStore";
+import ImageSelector from "./_components/ImageSelector";
 
 function PlaybookDetails() {
-  const { playbookData, hasHydrated } = usePlaybookDetailsStore();
+  const { playbookData, hasHydrated, setPlaybookData } = usePlaybookDetailsStore();
+
+  const handleImageChange = (newImageUrl: string) => {
+    if (playbookData) {
+      const updatedPlaybookData = {
+        ...playbookData,
+        playbook: {
+          ...playbookData.playbook,
+          imageUrl: newImageUrl
+        }
+      };
+      setPlaybookData(updatedPlaybookData);
+    }
+  };
 
   // Show loading state while hydrating
   if (!hasHydrated) {
@@ -42,24 +56,12 @@ function PlaybookDetails() {
         </h2>
         
         {/* Playbook Image */}
-        {playbookData?.playbook?.imageUrl && (
-          <div className="mb-6 animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'backwards' }}>
-            <label className="block text-sm font-bold text-gray-700 mb-2 uppercase">
-              Cover Image
-            </label>
-            <div className="relative rounded-lg overflow-hidden shadow-md max-w-md">
-              <img
-                src={playbookData.playbook.imageUrl}
-                alt={`Cover image for ${playbookData.playbook.name || 'playbook'}`}
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-            </div>
-          </div>
-        )}
+        <ImageSelector
+          currentImageUrl={playbookData?.playbook?.imageUrl}
+          requestType={playbookData?.playbook?.type || ""}
+          context={playbookData?.playbook?.context || ""}
+          onImageChange={handleImageChange}
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="animate-slide-in-right" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>

@@ -6,7 +6,6 @@ import { ArrowLeft, Sparkles, X, Loader2, PenTool, Send, ChevronDown, ChevronUp 
 import { useNewPlaybookStore } from "@/store/newPlaybookStore";
 import { usePlaybookDetailsStore } from "@/store/playbookDetailsStore";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from 'uuid';
 
 function SecondStep() {
   const { 
