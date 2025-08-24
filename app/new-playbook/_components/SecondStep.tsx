@@ -6,6 +6,7 @@ import { ArrowLeft, Sparkles, X, Loader2, PenTool, Send, ChevronDown, ChevronUp 
 import { useNewPlaybookStore } from "@/store/newPlaybookStore";
 import { usePlaybookDetailsStore } from "@/store/playbookDetailsStore";
 import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from 'uuid';
 
 function SecondStep() {
   const { 
@@ -112,37 +113,6 @@ function SecondStep() {
       if (response.ok) {
         const data = await response.json();
         console.log("Playbook API Response:", data);
-        if (data.playbook) {
-          data.playbook.type = payload.type;
-          data.playbook.context = payload.context;
-        }
-
-        // Get image URL for the playbook
-        try {
-          const imageResponse = await fetch("/api/images/search", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              request_type: payload.type,
-              context: payload.context,
-              count: 3
-            }),
-          });
-
-          if (imageResponse.ok) {
-            const imageData = await imageResponse.json();
-            console.log("Image Search API Response:", imageData);
-            if (imageData.firstImageUrl && data.playbook) {
-              data.playbook.imageUrl = imageData.firstImageUrl;
-            }
-          } else {
-            console.warn("Image search failed, continuing without image");
-          }
-        } catch (imageError) {
-          console.warn("Image search error, continuing without image:", imageError);
-        }
 
         // Store playbook data in context and navigate to playbook details page
         setPlaybookData(data);
